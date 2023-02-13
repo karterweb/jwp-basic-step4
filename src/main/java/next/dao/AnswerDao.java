@@ -1,10 +1,6 @@
 package next.dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.List;
 
 import next.model.Answer;
@@ -20,7 +16,7 @@ public class AnswerDao {
         PreparedStatementCreator psc = new PreparedStatementCreator() {
             @Override
             public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
-                PreparedStatement pstmt = con.prepareStatement(sql);
+                PreparedStatement pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
                 pstmt.setString(1, answer.getWriter());
                 pstmt.setString(2, answer.getContents());
                 pstmt.setTimestamp(3, new Timestamp(answer.getTimeFromCreateDate()));
@@ -32,6 +28,22 @@ public class AnswerDao {
         KeyHolder keyHolder = new KeyHolder();
         jdbcTemplate.update(psc, keyHolder);
         return findById(keyHolder.getId());
+    }
+
+    public void delete(Long answerId) {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate();
+        String sql = "DELETE ANSWERS WHERE ANSWERID = ?";
+        PreparedStatementCreator psc = new PreparedStatementCreator() {
+            @Override
+            public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+                PreparedStatement pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                pstmt.setLong(1, answerId);
+                return pstmt;
+            }
+        };
+
+        KeyHolder keyHolder = new KeyHolder();
+        jdbcTemplate.update(psc, keyHolder);
     }
 
     public Answer findById(long answerId) {
